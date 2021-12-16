@@ -46,6 +46,10 @@ class B2Conan(ConanFile):
         'toolset': 'auto'
     }
 
+    def export_sources(self):
+        for patch in self.conan_data.get("patches", {}).get(self.version, []):
+            self.copy(patch["patch_file"])
+
     def validate(self):
         if (self.options.toolset == 'cxx' or self.options.toolset == 'cross-cxx') and not self.options.use_cxx_env:
             raise ConanInvalidConfiguration(
@@ -54,6 +58,8 @@ class B2Conan(ConanFile):
     def source(self):
         tools.get(**self.conan_data["sources"][self.version],
                   strip_root=True, destination="source")
+        for patch in self.conan_data.get("patches", {}).get(self.version, []):
+            tools.patch(**patch)
 
     def build(self):
         use_windows_commands = os.name == 'nt'

@@ -26,3 +26,9 @@ sources:
   "4.7.1":
     url: "https://github.com/bfgroup/b2/archive/4.7.1.tar.gz"
     sha256: "30844184ded3217c090b76e6e051c3ac663ea63bd19e1b727b05c54411cac867"
+patches:
+  "4.7.1":
+    - patch_file: "patches/b2-fix-install.patch"
+      base_path: "source"
+
+
