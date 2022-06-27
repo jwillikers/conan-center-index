@@ -55,9 +55,6 @@ class NSSConan(ConanFile):
             raise ConanInvalidConfiguration("NSS recipes does not support MTd runtime. Contributions are welcome.")
         if not self.options["sqlite3"].shared:
             raise ConanInvalidConfiguration("NSS cannot link to static sqlite. Please use option sqlite3:shared=True")
-        if self.settings.arch in ["armv8", "armv8.3"] and self.settings.os in ["Macos"]:
-            raise ConanInvalidConfiguration("Macos ARM64 builds not yet supported. Contributions are welcome.")
-
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version], strip_root=True, destination=self._source_subfolder)
