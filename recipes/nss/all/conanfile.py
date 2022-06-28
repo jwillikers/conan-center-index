@@ -62,6 +62,7 @@ class NSSConan(ConanFile):
     @property
     def _make_args(self):
         args = []
+        xcflags = []
         if self.settings.arch in ["x86_64"]:
             args.append("USE_64=1")
             if self.settings.os == "Macos":
@@ -71,10 +72,22 @@ class NSSConan(ConanFile):
         if self.settings.arch in ["armv8", "armv8.3"]:
             args.append("USE_64=1")
             args.append("CPU_ARCH=aarch64")
-            if self.settings.os == "Macos":
+            if tools.is_apple_os(self.settings.os):
                 args.append("MACOS_SDK_DIR=%s" % tools.XCRun(self.settings).sdk_path)
+                if self.settings.get_safe("os.version"):
+                    xcflags.append(tools.apple_deployment_target_flag(self.settings.os,
+                                                                      self.settings.get_safe(
+                                                                          "os.version"),
+                                                                      self.settings.get_safe(
+                                                                          "os.sdk"),
+                                                                      self.settings.get_safe(
+                                                                          "os.subsystem"),
+                                                                      self.settings.get_safe("arch")))
+                if self.settings.get_safe("os.subsystem") == "catalyst":
+                    xcflags.append("--target=arm64-apple-ios-macabi")
         if self.settings.compiler == "gcc":
-            args.append("XCFLAGS=-Wno-array-parameter")
+            xcflags.append("-Wno-array-parameter")
+        args.append("XCFLAGS=%s" % " ".join(xcflags))
         args.append("NSPR_INCLUDE_DIR=%s" % self.deps_cpp_info["nspr"].include_paths[1])
         args.append("NSPR_LIB_DIR=%s" % self.deps_cpp_info["nspr"].lib_paths[0])
 
