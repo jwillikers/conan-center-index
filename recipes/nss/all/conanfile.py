@@ -71,8 +71,8 @@ class NSSConan(ConanFile):
                 args.append("CPU_ARCH=x86_64")
         if self.settings.arch in ["armv8", "armv8.3"]:
             args.append("USE_64=1")
-            args.append("CPU_ARCH=aarch64")
             if tools.is_apple_os(self.settings.os):
+                args.append("CPU_ARCH=arm")
                 args.append("MACOS_SDK_DIR=%s" % tools.XCRun(self.settings).sdk_path)
                 if self.settings.get_safe("os.version"):
                     xcflags.append(tools.apple_deployment_target_flag(self.settings.os,
@@ -85,6 +85,8 @@ class NSSConan(ConanFile):
                                                                       self.settings.get_safe("arch")))
                 if self.settings.get_safe("os.subsystem") == "catalyst":
                     xcflags.append("--target=arm64-apple-ios-macabi")
+            else:
+                args.append("CPU_ARCH=aarch64")
         if self.settings.compiler == "gcc":
             xcflags.append("-Wno-array-parameter")
         args.append("XCFLAGS=%s" % " ".join(xcflags))
