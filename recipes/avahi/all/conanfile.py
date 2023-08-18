@@ -75,8 +75,9 @@ class AvahiConan(ConanFile):
         tc.generate()
         AutotoolsDeps(self).generate()
         PkgConfigDeps(self).generate()
-        # Override Avahi's problematic check for the pkg-config executable.
         env = Environment()
+        env.define("have_dbus_connection_close", "yes")
+        # Override Avahi's problematic check for the pkg-config executable.
         env.define("have_pkg_config", "yes")
         env.vars(self).save_script("conanbuild_pkg_config")
 
