@@ -3,7 +3,7 @@ from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout, CMakeDeps
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.build import cross_building, check_min_cppstd
 from conan.tools.scm import Version
-from conan.tools.files import rm, get, rmdir, rename, collect_libs, export_conandata_patches, copy, apply_conandata_patches, replace_in_file
+from conan.tools.files import rm, get, rmdir, collect_libs, export_conandata_patches, copy, apply_conandata_patches, replace_in_file
 from conan.tools.microsoft import visual
 from conan.tools.apple import is_apple_os
 import os
@@ -50,7 +50,7 @@ class DiligentCoreConan(ConanFile):
             check_min_cppstd(self, self._minimum_cpp_standard)
         min_version = self._minimum_compilers_version.get(str(self.settings.compiler))
         if not min_version:
-            self.output.warning("{} recipe lacks information about the {} compiler support.".format(
+            self.output.warn("{} recipe lacks information about the {} compiler support.".format(
                 self.name, self.settings.compiler))
         else:
             if Version(self.settings.compiler.version) < min_version:
@@ -58,6 +58,8 @@ class DiligentCoreConan(ConanFile):
                     self.name, self._minimum_cpp_standard, self.settings.compiler, self.settings.compiler.version))
         if visual.is_msvc_static_runtime(self):
             raise ConanInvalidConfiguration("Visual Studio build with MT runtime is not supported")
+        if self.settings.os in ["FreeBSD", "Linux"] and not self.dependencies["libglvnd"].options.glx:
+            raise ConanInvalidConfiguration(f"{self.ref} requires the glx option of libglvnd to be enabled")
 
     def export_sources(self):
         copy(self, "conan_deps.cmake", src=self.recipe_folder, dst=os.path.join(self.export_sources_folder, "src"), keep_path=False)
@@ -97,6 +99,8 @@ class DiligentCoreConan(ConanFile):
     def configure(self):
         if self.options.shared:
             self.options.rm_safe("fPIC")
+        if self.settings.os in ["FreeBSD", "Linux"]:
+            self.options["libglvnd"].glx = True
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -112,7 +116,10 @@ class DiligentCoreConan(ConanFile):
         self.tool_requires("cmake/[>=3.24 <4]")
 
     def requirements(self):
-        self.requires("opengl/system")
+        if self.settings.os in ["FreeBSD", "Linux"]:
+            self.requires("libglvnd/1.7.0")
+        else:
+            self.requires("opengl/system")
         if self.settings.os == "Linux":
             self.requires("wayland/1.22.0")
 
