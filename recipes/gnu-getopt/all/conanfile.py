@@ -1,11 +1,10 @@
 import os
 
 from conan import ConanFile
-from conan.tools.env import Environment, VirtualBuildEnv
+from conan.tools.env import VirtualBuildEnv, VirtualRunEnv
 from conan.tools.files import copy, get
-from conan.tools.gnu import Autotools, AutotoolsToolchain
+from conan.tools.meson import Meson, MesonToolchain
 from conan.tools.layout import basic_layout
-from conan.tools.microsoft import is_msvc, unix_path
 
 required_conan_version = ">=1.54.0"
 
@@ -17,7 +16,6 @@ class GnuGetoptConan(ConanFile):
     url = "https://github.com/conan-io/conan-center-index"
     homepage = "http://frodo.looijaard.name/project/getopt"
     topics = ("gnu", "getopt", "utility", "command-line", "parsing")
-
     package_type = "application"
     settings = "os", "arch", "compiler", "build_type"
 
@@ -32,35 +30,33 @@ class GnuGetoptConan(ConanFile):
         del self.info.settings.compiler
 
     def build_requirements(self):
+        self.tool_requires("meson/1.4.0")
         if self._settings_build.os == "Windows":
             self.win_bash = True
             if not self.conf.get("tools.microsoft.bash:path", check_type=str):
                 self.tool_requires("msys2/cci.latest")
-        if is_msvc(self):
-            self.tool_requires("automake/1.16.5")
 
     def source(self):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
 
     def generate(self):
-        env = VirtualBuildEnv(self)
-        env.generate()
-
-        tc = AutotoolsToolchain(self)
+        tc = MesonToolchain(self)
+        tc.project_options["auto_features"] = "disabled"
+        # Enable libutil for older versions of glibc which still provide an actual libutil library.
+        tc.project_options["libutil"] = "enabled"
+        tc.project_options["program-tests"] = False
+        if "x86" in self.settings.arch:
+            tc.c_args.append("-mstackrealign")
         tc.generate()
-
-        if is_msvc(self):
-            env = Environment()
-            automake_conf = self.dependencies.build["automake"].conf_info
-            compile_wrapper = unix_path(self, automake_conf.get("user.automake:compile-wrapper", check_type=str))
-            env.define("CC", f"{compile_wrapper} cl -nologo")
-            env.define("LD", "link -nologo")
-            env.vars(self).save_script("conanbuild_msvc")
+        build_env = VirtualBuildEnv(self)
+        build_env.generate()
+        run_env = VirtualRunEnv(self)
+        run_env.generate()
 
     def build(self):
-        autotools = Autotools(self)
-        autotools.configure()
-        autotools.make(target="getopt")
+        meson = Meson(self)
+        meson.configure()
+        meson.build()
 
     def package(self):
         copy(self, "COPYING", self.source_folder, os.path.join(self.package_folder, "licenses"))

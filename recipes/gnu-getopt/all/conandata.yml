@@ -1,4 +1,13 @@
 sources:
   "2.40":
-    url: "https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.40/util-linux-2.40.tar.xz"
-    sha256: "d57a626081f9ead02fa44c63a6af162ec19c58f53e993f206ab7c3a6641c2cd7"
+    # Official release tarball is missing meson.build files, so use GitHub archive.
+    # Refer to https://github.com/util-linux/util-linux/issues/2875.
+    # url: "https://github.com/util-linux/util-linux/archive/refs/tags/v2.40.tar.gz"
+    # sha256: "f7ff8573289313e38ee3378cbc2938f34444a8cb546e1236e46151834be69784"
+    url: "https://github.com/util-linux/util-linux/archive/eaa8798a4871c7e6564e5da1c2dd6d66bbc6a7cb.tar.gz"
+    sha256: "0efb1260d079db333d2bc6d47fd8bf20ce0d62de04092363529ea99e0842d326"
+patches:
+  "2.40":
+    # Do not merge this patch!
+    # It is a hack to build but needs verification that it actually works properly.
+    - patch_file: "patches/2.40-0001-Add-patch-to-workaround-alias-on-macOS.patch"
