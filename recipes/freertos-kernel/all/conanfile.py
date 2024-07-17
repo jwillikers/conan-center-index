@@ -91,9 +91,7 @@ port_include_directories = {
     ],
     "GCC_RISC_V_PULPINO_VEGA_RV32M1RM": [
         os.path.join("GCC", "RISC-V"),
-        os.path.join(
-            "GCC", "RISC-V", "chip_specific_extensions", "Pulpino_Vega_RV32M1RM"
-        ),
+        os.path.join("GCC", "RISC-V", "chip_specific_extensions", "Pulpino_Vega_RV32M1RM"),
     ],
     "GCC_RISC_V_GENERIC": [
         os.path.join("GCC", "RISC-V"),
@@ -118,12 +116,8 @@ port_include_directories = {
         os.path.join("ThirdParty", "GCC", "Xtensa_ESP32"),
         os.path.join("ThirdParty", "GCC", "Xtensa_ESP32", "include"),
     ],
-    "GCC_AVRDX": [
-        os.path.join("ThirdParty", "Partner-Supported-Ports", "GCC", "AVR_AVRDx")
-    ],
-    "GCC_AVR_MEGA0": [
-        os.path.join("ThirdParty", "Partner-Supported-Ports", "GCC", "AVR_Mega0")
-    ],
+    "GCC_AVRDX": [os.path.join("ThirdParty", "Partner-Supported-Ports", "GCC", "AVR_AVRDx")],
+    "GCC_AVR_MEGA0": [os.path.join("ThirdParty", "Partner-Supported-Ports", "GCC", "AVR_Mega0")],
     "IAR_78K0K": [os.path.join("IAR", "78K0R")],
     "IAR_ARM_CA5_NOGIC": [os.path.join("IAR", "ARM_CA5_No_GIC")],
     "IAR_ARM_CA9": [os.path.join("IAR", "ARM_CA9")],
@@ -159,9 +153,7 @@ port_include_directories = {
     "IAR_MSP430X": [os.path.join("IAR", "MSP430X")],
     "IAR_RISC_V": [
         os.path.join("IAR", "RISC-V"),
-        os.path.join(
-            "IAR", "RISC-V", "chip_specific_extensions", "RV32I_CLINT_no_extensions"
-        ),
+        os.path.join("IAR", "RISC-V", "chip_specific_extensions", "RV32I_CLINT_no_extensions"),
     ],
     "IAR_RISC_V_GENERIC": [
         os.path.join("IAR", "RISC-V"),
@@ -443,8 +435,7 @@ class FreeRTOSKernelConan(ConanFile):
     def validate(self):
         if (
             self.options.port == "IAR_RISC_V_GENERIC"
-            and self.options.get_safe("risc_v_chip_extension")
-            != "RV32I_CLINT_no_extensions"
+            and self.options.get_safe("risc_v_chip_extension") != "RV32I_CLINT_no_extensions"
         ):
             raise ConanInvalidConfiguration(
                 "Only the RV32I_CLINT_no_extensions RISC-V extension can be enabled when using the IAR_RISC_V_GENERIC port"
@@ -466,9 +457,7 @@ class FreeRTOSKernelConan(ConanFile):
         tc.variables["FREERTOS_HEAP"] = self.options.heap
         tc.variables["FREERTOS_PORT"] = self.options.port
         if self.options.get_safe("risc_v_chip_extension"):
-            tc.variables["FREERTOS_RISCV_EXTENSION"] = (
-                self.options.risc_v_chip_extension
-            )
+            tc.variables["FREERTOS_RISCV_EXTENSION"] = self.options.risc_v_chip_extension
         tc.variables["_FREERTOS_CONFIG_DIR"] = self.build_folder.replace("\\", "/")
         tc.generate()
 
@@ -503,9 +492,7 @@ class FreeRTOSKernelConan(ConanFile):
         )
         if self.options.get_safe("risc_v_chip_extension"):
             for risc_v_generic_port in ["GCC", "IAR"]:
-                port_include_directories[
-                    f"{risc_v_generic_port}_RISC_V_GENERIC"
-                ].append(
+                port_include_directories[f"{risc_v_generic_port}_RISC_V_GENERIC"].append(
                     os.path.join(
                         risc_v_generic_port,
                         "RISC-V",
